@@ -35,7 +35,7 @@ fi
 
 PYTHON_PATH="$1"
 
-# Проверка существования JAR файла
+# Проверка существования python файла
 if [ ! -f "$PYTHON_PATH" ]; then
     echo "✗ python file '$PYTHON_PATH' does not exist."
     exit 1
