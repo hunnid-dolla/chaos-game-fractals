@@ -96,7 +96,11 @@ def main() -> None:
         sys.exit(1)
 
     # 3. Запуск рендеринга (Многопоточность)
-    total_samples = 100_000  # Базовое кол-во точек для плотности
+    total_samples = config.samples  # Берем из конфига
+
+    if total_samples < config.threads:
+        total_samples = config.threads
+        
     samples_per_thread = total_samples // config.threads
 
     final_image = FractalImage(config.size.width, config.size.height)

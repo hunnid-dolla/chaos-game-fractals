@@ -35,6 +35,7 @@ class AppConfig(BaseModel):
 
     size: SizeConfig = Field(default_factory=SizeConfig)
     iteration_count: int = 2500
+    samples: int = 20_000
     output_path: str = "result.png"
     threads: int = 1
     seed: float = 5.1234
@@ -68,6 +69,7 @@ def parse_args() -> AppConfig:
     parser.add_argument("-w", "--width", type=int, help="Image width")
     parser.add_argument("-h", "--height", type=int, help="Image height")
     parser.add_argument("-i", "--iteration-count", type=int, help="Iterations per pixel")
+    parser.add_argument("-s", "--samples", type=int, help="Number of starting points")
     parser.add_argument("-o", "--output-path", type=str, help="Output file path")
     parser.add_argument("-t", "--threads", type=int, help="Number of threads")
     parser.add_argument("--seed", type=float, help="Random seed")
@@ -107,6 +109,8 @@ def parse_args() -> AppConfig:
         config_data.setdefault("size", {})["height"] = args.height
     if args.iteration_count:
         config_data["iteration_count"] = args.iteration_count
+    if args.samples:
+        config_data["samples"] = args.samples
     if args.output_path:
         config_data["output_path"] = args.output_path
     if args.threads:
