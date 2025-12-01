@@ -4,7 +4,8 @@ from src.core import Color
 from src.image import FractalImage
 
 
-def test_image_initialization():
+def test_image_initialization() -> None:
+    """Проверка инициализации изображения."""
     img = FractalImage(10, 20)
     assert img.width == 10
     assert img.height == 20
@@ -12,7 +13,8 @@ def test_image_initialization():
     assert img.pixels[0].counter == 0
 
 
-def test_image_contains():
+def test_image_contains() -> None:
+    """Проверка границ изображения."""
     img = FractalImage(100, 100)
     assert img.contains(0, 0)
     assert img.contains(99, 99)
@@ -20,9 +22,9 @@ def test_image_contains():
     assert not img.contains(100, 50)
 
 
-def test_pixel_hit():
+def test_pixel_hit() -> None:
+    """Проверка попадания в пиксель."""
     img = FractalImage(2, 2)
-    # Попадаем в пиксель (0,0) красным цветом
     pixel = img.pixel_at(0, 0)
     pixel.hit(Color(255, 0, 0))
 
@@ -31,8 +33,6 @@ def test_pixel_hit():
     assert pixel.g == 0.0
     assert pixel.b == 0.0
 
-    # Попадаем второй раз синим цветом
-    # (255+0)/2 = 127.5, (0+0)/2 = 0, (0+255)/2 = 127.5
     pixel.hit(Color(0, 0, 255))
     assert pixel.counter == 2
     assert pixel.r == 127.5

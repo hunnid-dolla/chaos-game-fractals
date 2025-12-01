@@ -13,7 +13,6 @@ from src.renderer import Renderer
 from src.transformations import TRANSFORMATIONS_MAP, Transformation
 from src.utils import generate_affine_coefficients
 
-# Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -31,11 +30,10 @@ def render_task(
     iters: int,
     seed: float,
 ) -> FractalImage:
-    """
-    Задача для отдельного процесса.
+    """Задача для отдельного процесса.
+
     Создает свой экземпляр изображения и рендерит часть точек.
     """
-
     import random
 
     random.seed(seed)
@@ -51,14 +49,12 @@ def merge_images(base: FractalImage, layer: FractalImage) -> None:
     for i, pixel_layer in enumerate(layer.pixels):
         if pixel_layer.counter > 0:
             pixel_base = base.pixels[i]
-            # Если в базовом пикселе еще ничего не было
             if pixel_base.counter == 0:
                 pixel_base.r = pixel_layer.r
                 pixel_base.g = pixel_layer.g
                 pixel_base.b = pixel_layer.b
                 pixel_base.counter = pixel_layer.counter
             else:
-                # Если уже было, усредняем цвет и суммируем попадания
                 pixel_base.r = (pixel_base.r + pixel_layer.r) / 2
                 pixel_base.g = (pixel_base.g + pixel_layer.g) / 2
                 pixel_base.b = (pixel_base.b + pixel_layer.b) / 2
@@ -70,43 +66,40 @@ def main() -> None:
     start_time = time.time()
     logger.info("Starting Fractal Flame Generator...")
 
-    # 1. Загрузка конфигурации
     try:
         config = parse_args()
-    except Exception as e:
-        logger.error(f"Failed to parse configuration: {e}")
+    except Exception:
+        logger.exception("Failed to parse configuration")
         sys.exit(1)
 
     logger.info(
-        f"Config loaded. Size: {config.size.width}x{config.size.height}, "
-        f"Threads: {config.threads}, Iterations: {config.iteration_count}"
+        "Config loaded. Size: %sx%s, Threads: %s, Iterations: %s",
+        config.size.width,
+        config.size.height,
+        config.threads,
+        config.iteration_count,
     )
 
-    # 2. Подготовка ресурсов
     affine_coefficients = generate_affine_coefficients(20)
 
-    # Собираем список активных трансформаций
-    active_transformations = []
-    for func_conf in config.functions:
-        if func_conf.name in TRANSFORMATIONS_MAP:
-            active_transformations.append(TRANSFORMATIONS_MAP[func_conf.name])
+    active_transformations = [
+        TRANSFORMATIONS_MAP[func_conf.name]
+        for func_conf in config.functions
+        if func_conf.name in TRANSFORMATIONS_MAP
+    ]
 
     if not active_transformations:
         logger.error("No valid transformations specified.")
         sys.exit(1)
 
-    # 3. Запуск рендеринга (Многопоточность)
-    total_samples = config.samples  # Берем из конфига
-
-    if total_samples < config.threads:
-        total_samples = config.threads
-
+    total_samples = config.samples
+    total_samples = max(total_samples, config.threads)
     samples_per_thread = total_samples // config.threads
 
     final_image = FractalImage(config.size.width, config.size.height)
     futures = []
 
-    logger.info(f"Launching {config.threads} worker process(es)...")
+    logger.info("Launching %s worker process(es)...", config.threads)
 
     with ProcessPoolExecutor(max_workers=config.threads) as executor:
         for i in range(config.threads):
@@ -124,7 +117,6 @@ def main() -> None:
                 )
             )
 
-        # Сбор результатов
         completed_count = 0
         for future in as_completed(futures):
             try:
@@ -132,15 +124,16 @@ def main() -> None:
                 merge_images(final_image, part_image)
                 completed_count += 1
                 logger.info(
-                    f"Progress: {completed_count}/{config.threads} threads finished."
+                    "Progress: %s/%s threads finished.",
+                    completed_count,
+                    config.threads,
                 )
-            except Exception as e:
-                logger.error(f"Thread failed with error: {e}")
+            except Exception:
+                logger.exception("Thread failed with error")
 
     render_time = time.time() - start_time
-    logger.info(f"Rendering completed in {render_time:.2f} seconds.")
+    logger.info("Rendering completed in %.2f seconds.", render_time)
 
-    # 4. Сохранение результата
     try:
         processor = ImageProcessor()
         processor.save(
@@ -149,9 +142,9 @@ def main() -> None:
             gamma=config.gamma,
             enable_gamma_correction=config.gamma_correction,
         )
-        logger.info(f"Image saved to {config.output_path}")
-    except Exception as e:
-        logger.error(f"Failed to save image: {e}")
+        logger.info("Image saved to %s", config.output_path)
+    except Exception:
+        logger.exception("Failed to save image")
         sys.exit(1)
 
 

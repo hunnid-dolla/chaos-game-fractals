@@ -18,8 +18,7 @@ class Renderer:
         samples: int,
         iter_per_sample: int,
     ) -> None:
-        """
-        Запускает процесс рендеринга.
+        """Запускает процесс рендеринга.
 
         Args:
             image: Холст для рисования.
@@ -27,6 +26,7 @@ class Renderer:
             transformations: Список применяемых вариаций.
             samples: Количество начальных точек (потоков "сэмплов").
             iter_per_sample: Количество итераций для каждой точки.
+
         """
 
         aspect = image.width / image.height
@@ -46,8 +46,6 @@ class Renderer:
                 coeff = random.choice(coefficients)
 
                 # Применяем линейное преобразование
-                # x' = ax + by + c
-                # y' = dx + ey + f
                 x = coeff.a * current_point.x + coeff.b * current_point.y + coeff.c
                 y = coeff.d * current_point.x + coeff.e * current_point.y + coeff.f
 

@@ -15,19 +15,19 @@ class ImageProcessor:
         image: FractalImage,
         output_path: str,
         gamma: float = 2.2,
+        *,
         enable_gamma_correction: bool = True,
     ) -> None:
-        """
-        Сохраняет изображение в файл с применением гамма-коррекции.
+        """Сохраняет изображение в файл с применением гамма-коррекции.
 
         Args:
             image: Холст с пикселями.
             output_path: Путь для сохранения.
             gamma: Значение гаммы.
             enable_gamma_correction: Включить ли коррекцию.
+
         """
-        # Подготавливаем буфер данных для Pillow
-        # Pillow принимает список кортежей
+        # Подготавливаем буфер данных
         data = []
 
         # Предварительно вычисляем обратную гамму для скорости
@@ -47,11 +47,11 @@ class ImageProcessor:
                 b = math.pow(b / 255.0, inv_gamma) * 255.0
 
             # Ограничиваем значения диапазоном
-            r = min(max(0, int(r)), 255)
-            g = min(max(0, int(g)), 255)
-            b = min(max(0, int(b)), 255)
+            r_int = min(max(0, int(r)), 255)
+            g_int = min(max(0, int(g)), 255)
+            b_int = min(max(0, int(b)), 255)
 
-            data.append((r, g, b))
+            data.append((r_int, g_int, b_int))
 
         # Создаем изображение и сохраняем
         img = Image.new("RGB", (image.width, image.height))

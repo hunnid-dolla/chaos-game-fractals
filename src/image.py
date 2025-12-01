@@ -1,12 +1,12 @@
 """Класс для хранения изображения (холст)."""
 
-from src.core import Color, Pixel
+from src.core import Pixel
 
 
 class FractalImage:
     """Холст для отрисовки фрактала."""
 
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int) -> None:
         self.width = width
         self.height = height
         # Одномерный массив пикселей

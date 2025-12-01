@@ -6,8 +6,8 @@ from src.core import AffineCoefficients, Color
 
 
 def generate_affine_coefficients(count: int) -> list[AffineCoefficients]:
-    """
-    Генерирует набор случайных аффинных коэффициентов.
+    """Генерирует набор случайных аффинных коэффициентов.
+
     Коэффициенты подбираются так, чтобы преобразование было сжимающим.
     """
     coefficients = []

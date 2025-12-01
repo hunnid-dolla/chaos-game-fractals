@@ -18,6 +18,7 @@ class LinearTransformation(Transformation):
     """Линейная трансформация (V0)."""
 
     def apply(self, point: Point) -> Point:
+        """Возвращает точку без изменений."""
         return point
 
 
@@ -25,6 +26,7 @@ class SinusoidalTransformation(Transformation):
     """Синусоидальная трансформация (V1)."""
 
     def apply(self, point: Point) -> Point:
+        """Применяет синус к координатам."""
         return Point(x=math.sin(point.x), y=math.sin(point.y))
 
 
@@ -32,6 +34,7 @@ class SphericalTransformation(Transformation):
     """Сферическая трансформация (V2)."""
 
     def apply(self, point: Point) -> Point:
+        """Искажает координаты по сфере."""
         r2 = point.x**2 + point.y**2
         if r2 == 0:
             return point
@@ -42,6 +45,7 @@ class SwirlTransformation(Transformation):
     """Трансформация 'Вихрь' (V3)."""
 
     def apply(self, point: Point) -> Point:
+        """Закручивает координаты в вихрь."""
         r2 = point.x**2 + point.y**2
         sin_r2 = math.sin(r2)
         cos_r2 = math.cos(r2)
@@ -55,6 +59,7 @@ class HorseshoeTransformation(Transformation):
     """Трансформация 'Подкова' (V4)."""
 
     def apply(self, point: Point) -> Point:
+        """Искажает координаты в форме подковы."""
         r = math.sqrt(point.x**2 + point.y**2)
         if r == 0:
             return point

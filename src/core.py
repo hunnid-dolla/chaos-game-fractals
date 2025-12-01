@@ -1,6 +1,6 @@
 """Основные структуры данных для генерации фрактала."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,11 @@ class Color:
 
 @dataclass(frozen=True)
 class AffineCoefficients:
-    """Коэффициенты для аффинного преобразования: x_new = ax + by + c, y_new = dx + ey + f."""
+    """
+    Коэффициенты для аффинного преобразования.
+
+    x_new = ax + by + c, y_new = dx + ey + f.
+    """
 
     a: float
     b: float
@@ -53,7 +57,7 @@ class Pixel:
             self.g = float(color.g)
             self.b = float(color.b)
         else:
-            # Усреднение цвета (простая версия, позже добавим логарифмическую)
+            # Усреднение цвета
             self.r = (self.r + color.r) / 2
             self.g = (self.g + color.g) / 2
             self.b = (self.b + color.b) / 2
