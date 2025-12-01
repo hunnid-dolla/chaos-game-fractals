@@ -11,14 +11,18 @@ from src.transformations import (
     SwirlTransformation,
 )
 
+COORD_1 = 1.0
+COORD_2 = 2.0
+COORD_0_5 = 0.5
+
 
 def test_linear_transformation() -> None:
     """Тест линейной трансформации."""
     t = LinearTransformation()
-    p = Point(1.0, 2.0)
+    p = Point(COORD_1, COORD_2)
     res = t.apply(p)
-    assert res.x == 1.0
-    assert res.y == 2.0
+    assert res.x == COORD_1
+    assert res.y == COORD_2
 
 
 def test_sinusoidal_transformation() -> None:
@@ -33,9 +37,9 @@ def test_sinusoidal_transformation() -> None:
 def test_spherical_transformation() -> None:
     """Тест сферической трансформации."""
     t = SphericalTransformation()
-    p = Point(2.0, 0.0)
+    p = Point(COORD_2, 0.0)
     res = t.apply(p)
-    assert math.isclose(res.x, 0.5)
+    assert math.isclose(res.x, COORD_0_5)
     assert math.isclose(res.y, 0.0)
 
 

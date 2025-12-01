@@ -12,16 +12,22 @@ from src.transformations import TRANSFORMATIONS_MAP
 
 
 class SizeConfig(BaseModel):
+    """Конфигурация размера изображения."""
+
     width: int = 1920
     height: int = 1080
 
 
 class TransformationConfig(BaseModel):
+    """Конфигурация одной трансформации."""
+
     name: str
     weight: float
 
 
 class AffineParams(BaseModel):
+    """Коэффициенты аффинного преобразования."""
+
     a: float
     b: float
     c: float
@@ -52,14 +58,57 @@ class AppConfig(BaseModel):
     gamma: float = 2.2
 
 
+def _load_json_config(path: str) -> dict[str, Any]:
+    config_path = Path(path)
+    if not config_path.exists():
+        print(f"Config file not found: {path}", file=sys.stderr)
+        sys.exit(1)
+    with config_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _parse_functions(functions_str: str) -> list[dict[str, Any]]:
+    funcs = []
+    for item in functions_str.split(","):
+        name, weight = item.split(":")
+        if name not in TRANSFORMATIONS_MAP:
+            print(f"Unknown transformation: {name}", file=sys.stderr)
+            sys.exit(1)
+        funcs.append({"name": name, "weight": float(weight)})
+    return funcs
+
+
+def _update_config_from_args(
+    config_data: dict[str, Any], args: argparse.Namespace
+) -> None:
+    if args.width:
+        config_data.setdefault("size", {})["width"] = args.width
+    if args.height:
+        config_data.setdefault("size", {})["height"] = args.height
+    if args.iteration_count:
+        config_data["iteration_count"] = args.iteration_count
+    if args.samples:
+        config_data["samples"] = args.samples
+    if args.output_path:
+        config_data["output_path"] = args.output_path
+    if args.threads:
+        config_data["threads"] = args.threads
+    if args.seed:
+        config_data["seed"] = args.seed
+    if args.gamma_correction is not None:
+        config_data["gamma_correction"] = args.gamma_correction
+    if args.gamma:
+        config_data["gamma"] = args.gamma
+    if args.functions:
+        config_data["functions"] = _parse_functions(args.functions)
+
+
 def parse_args() -> AppConfig:
     """Парсит аргументы CLI и объединяет их с конфигом."""
     parser = argparse.ArgumentParser(
         description="Fractal Flame Generator", add_help=False
     )
-
     parser.add_argument("--help", action="help", help="Show this help message and exit")
-
     parser.add_argument("--config", type=str, help="Path to JSON config file")
     parser.add_argument("-w", "--width", type=int, help="Image width")
     parser.add_argument("-h", "--height", type=int, help="Image height")
@@ -85,51 +134,13 @@ def parse_args() -> AppConfig:
     parser.add_argument("--gamma", type=float, help="Gamma value")
 
     args = parser.parse_args()
-
-    # 1. Загружаем дефолтный конфиг
     config_data: dict[str, Any] = AppConfig().model_dump()
 
-    # 2. Если передан JSON конфиг, обновляем значения из него
     if args.config:
-        config_path = Path(args.config)
-        if not config_path.exists():
-            print(f"Config file not found: {args.config}", file=sys.stderr)
-            sys.exit(1)
-        with config_path.open("r", encoding="utf-8") as f:
-            json_config = json.load(f)
-            config_data.update(json_config)
+        config_data.update(_load_json_config(args.config))
 
-    # 3. Аргументы CLI имеют наивысший приоритет
-    if args.width:
-        config_data.setdefault("size", {})["width"] = args.width
-    if args.height:
-        config_data.setdefault("size", {})["height"] = args.height
-    if args.iteration_count:
-        config_data["iteration_count"] = args.iteration_count
-    if args.samples:
-        config_data["samples"] = args.samples
-    if args.output_path:
-        config_data["output_path"] = args.output_path
-    if args.threads:
-        config_data["threads"] = args.threads
-    if args.seed:
-        config_data["seed"] = args.seed
-    if args.gamma_correction is not None:
-        config_data["gamma_correction"] = args.gamma_correction
-    if args.gamma:
-        config_data["gamma"] = args.gamma
+    _update_config_from_args(config_data, args)
 
-    if args.functions:
-        funcs = []
-        for item in args.functions.split(","):
-            name, weight = item.split(":")
-            if name not in TRANSFORMATIONS_MAP:
-                print(f"Unknown transformation: {name}", file=sys.stderr)
-                sys.exit(1)
-            funcs.append({"name": name, "weight": float(weight)})
-        config_data["functions"] = funcs
-
-    # Валидация через Pydantic
     try:
         return AppConfig(**config_data)
     except Exception as e:

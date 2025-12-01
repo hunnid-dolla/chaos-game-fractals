@@ -26,9 +26,7 @@ class Renderer:
             transformations: Список применяемых вариаций.
             samples: Количество начальных точек (потоков "сэмплов").
             iter_per_sample: Количество итераций для каждой точки.
-
         """
-
         aspect = image.width / image.height
         world_x_min, world_x_max = -aspect, aspect
         world_y_min, world_y_max = -1.0, 1.0
