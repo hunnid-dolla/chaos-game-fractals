@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from src.transformations import TRANSFORMATIONS_MAP
 
@@ -81,24 +81,29 @@ def _parse_functions(functions_str: str) -> list[dict[str, Any]]:
 def _update_config_from_args(
     config_data: dict[str, Any], args: argparse.Namespace
 ) -> None:
+    simple_mappings = {
+        "iteration_count": "iteration_count",
+        "samples": "samples",
+        "output_path": "output_path",
+        "threads": "threads",
+        "seed": "seed",
+        "gamma_correction": "gamma_correction",
+        "gamma": "gamma",
+    }
+
+    # Обновляем простые поля
+    for arg_name, config_key in simple_mappings.items():
+        val = getattr(args, arg_name)
+        if val is not None:
+            config_data[config_key] = val
+
+    # Обновляем вложенные поля
     if args.width:
         config_data.setdefault("size", {})["width"] = args.width
     if args.height:
         config_data.setdefault("size", {})["height"] = args.height
-    if args.iteration_count:
-        config_data["iteration_count"] = args.iteration_count
-    if args.samples:
-        config_data["samples"] = args.samples
-    if args.output_path:
-        config_data["output_path"] = args.output_path
-    if args.threads:
-        config_data["threads"] = args.threads
-    if args.seed:
-        config_data["seed"] = args.seed
-    if args.gamma_correction is not None:
-        config_data["gamma_correction"] = args.gamma_correction
-    if args.gamma:
-        config_data["gamma"] = args.gamma
+
+    # Обновляем функции
     if args.functions:
         config_data["functions"] = _parse_functions(args.functions)
 
@@ -143,6 +148,6 @@ def parse_args() -> AppConfig:
 
     try:
         return AppConfig(**config_data)
-    except Exception as e:
+    except (ValidationError, ValueError) as e:
         print(f"Configuration error: {e}", file=sys.stderr)
         sys.exit(1)

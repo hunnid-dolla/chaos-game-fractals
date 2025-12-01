@@ -26,6 +26,7 @@ class Renderer:
             transformations: Список применяемых вариаций.
             samples: Количество начальных точек (потоков "сэмплов").
             iter_per_sample: Количество итераций для каждой точки.
+
         """
         aspect = image.width / image.height
         world_x_min, world_x_max = -aspect, aspect
@@ -38,7 +39,6 @@ class Renderer:
                 random.uniform(world_y_min, world_y_max),
             )
 
-            # 2. Запускаем итерации
             for step in range(-20, iter_per_sample):
                 # Выбираем случайное аффинное преобразование
                 coeff = random.choice(coefficients)

@@ -10,6 +10,8 @@ BIG_SIZE = 100
 SMALL_SIZE = 2
 COLOR_MAX = 255.0
 COLOR_HALF = 127.5
+HIT_COUNT_1 = 1
+HIT_COUNT_2 = 2
 
 
 def test_image_initialization() -> None:
@@ -36,12 +38,12 @@ def test_pixel_hit() -> None:
     pixel = img.pixel_at(0, 0)
     pixel.hit(Color(255, 0, 0))
 
-    assert pixel.counter == 1
+    assert pixel.counter == HIT_COUNT_1
     assert pixel.r == COLOR_MAX
     assert pixel.g == 0.0
     assert pixel.b == 0.0
 
     pixel.hit(Color(0, 0, 255))
-    assert pixel.counter == 2
+    assert pixel.counter == HIT_COUNT_2
     assert pixel.r == COLOR_HALF
     assert pixel.b == COLOR_HALF
