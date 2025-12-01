@@ -6,9 +6,9 @@ echo "Testing basic functionality..."
 SCRIPT_PATH="$1"
 ARGS="-w 800 -h 600 -o test_output.png"
 
-# Запуск программы с установкой PYTHONPATH
-echo "Running: python $SCRIPT_PATH $ARGS"
-PYTHONPATH=. python "$SCRIPT_PATH" $ARGS
+# Запуск программы через POETRY
+echo "Running: poetry run python $SCRIPT_PATH $ARGS"
+PYTHONPATH=. poetry run python "$SCRIPT_PATH" $ARGS
 
 # Проверка кода возврата
 EXIT_CODE=$?

@@ -11,8 +11,8 @@ measure_time() {
     # Измерение времени выполнения
     START_TIME=$(date +%s)
     
-    # Запуск с PYTHONPATH и исправленной переменной PYTHON_PATH
-    PYTHONPATH=. python "$PYTHON_PATH" -w 1920 -h 1080 -t "$threads" -o "$output_file"
+    # Запуск через POETRY
+    PYTHONPATH=. poetry run python "$PYTHON_PATH" -w 1920 -h 1080 -t "$threads" -o "$output_file"
     
     EXIT_CODE=$?
     END_TIME=$(date +%s)
