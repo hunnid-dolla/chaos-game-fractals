@@ -55,20 +55,17 @@ class AppConfig(BaseModel):
 def parse_args() -> AppConfig:
     """Парсит аргументы CLI и объединяет их с конфигом."""
     parser = argparse.ArgumentParser(
-        description="Fractal Flame Generator",
-        add_help=False
+        description="Fractal Flame Generator", add_help=False
     )
 
-    parser.add_argument(
-        "--help",
-        action="help",
-        help="Show this help message and exit"
-    )
+    parser.add_argument("--help", action="help", help="Show this help message and exit")
 
     parser.add_argument("--config", type=str, help="Path to JSON config file")
     parser.add_argument("-w", "--width", type=int, help="Image width")
     parser.add_argument("-h", "--height", type=int, help="Image height")
-    parser.add_argument("-i", "--iteration-count", type=int, help="Iterations per pixel")
+    parser.add_argument(
+        "-i", "--iteration-count", type=int, help="Iterations per pixel"
+    )
     parser.add_argument("-s", "--samples", type=int, help="Number of starting points")
     parser.add_argument("-o", "--output-path", type=str, help="Output file path")
     parser.add_argument("-t", "--threads", type=int, help="Number of threads")

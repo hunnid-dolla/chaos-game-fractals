@@ -100,7 +100,7 @@ def main() -> None:
 
     if total_samples < config.threads:
         total_samples = config.threads
-        
+
     samples_per_thread = total_samples // config.threads
 
     final_image = FractalImage(config.size.width, config.size.height)
