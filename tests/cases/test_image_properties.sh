@@ -9,7 +9,7 @@ ARGS="-w 800 -h 600 -o test_output.png"
 # Генерация тестового изображения, если оно не существует
 if [ ! -f "test_output.png" ]; then
     echo "Generating test image..."
-    PYTHONPATH=. poetry run python "$SCRIPT_PATH" $ARGS
+    PYTHONPATH=. python -m poetry run python "$SCRIPT_PATH" $ARGS
     # Проверка, была ли генерация успешной
     if [ $? -ne 0 ]; then
         echo "✗ Failed to generate test image"
@@ -47,3 +47,9 @@ fi
 PNG_SIGNATURE=$(dd if="test_output.png" bs=8 count=1 2>/dev/null | xxd -p)
 if [ "$PNG_SIGNATURE" = "89504e470d0a1a0a" ]; then
     echo "✓ Image file has valid PNG signature"
+else
+    echo "✗ Image file does not have valid PNG signature"
+    exit 1
+fi
+
+echo "Image properties test passed!"
