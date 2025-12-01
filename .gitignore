@@ -1,24 +1,20 @@
-### Project ##
-!**/src/main/**
-!**/src/test/**
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.env
 
-### Maven ###
-!.mvn/wrapper/maven-wrapper.jar
-target/
-.flattened-pom.xml
-dependency-reduced-pom.xml
-
-### IntelliJ IDEA ###
-!.idea/codeStyles/Project.xml
-!.idea/jsonSchemas.xml
+# IDE
+.vscode/
 .idea/
-*.iws
-*.iml
-*.ipr
 
-### Scala SBT
-.bsp
-
-### log files ###
+# Project output
+*.png
 *.log
-hs_err_pid*
+coverage.xml
+.coverage
+htmlcov/
+
+# System
+.DS_Store

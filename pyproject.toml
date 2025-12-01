@@ -1,14 +1,16 @@
 [tool.poetry]
 name = "backend-academy-2025-python-template-hw4"
 version = "0.1.0"
-description = ""
+description = "Fractal Flame Generator"
 package-mode = false
 authors = ["n.beskodarov <n.beskodarov@tinkoff.ru>", "g.tarasov <g.tarasov@tbank.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-
+Pillow = "^10.2.0"
+numpy = "^1.26.0"
+pydantic = "^2.6.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
@@ -78,3 +80,7 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.pylint]
 max-args = 7
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
