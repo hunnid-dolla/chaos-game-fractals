@@ -9,7 +9,7 @@ ARGS="-w 800 -h 600 -o test_output.png"
 # Генерация тестового изображения, если оно не существует
 if [ ! -f "test_output.png" ]; then
     echo "Generating test image..."
-    python "$SCRIPT_PATH" $ARGS
+    PYTHONPATH=. python "$SCRIPT_PATH" $ARGS
     # Проверка, была ли генерация успешной
     if [ $? -ne 0 ]; then
         echo "✗ Failed to generate test image"
