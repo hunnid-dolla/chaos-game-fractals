@@ -1,7 +1,7 @@
 image: python:3.12-slim
 
 variables:
-  P_LANG: "python" # Default value, may be overridden via GitLab CI/CD UI
+  P_LANG: "python"
 
 stages:
   - pre
@@ -18,10 +18,10 @@ Run linters:
   stage: lint
   variables:
     POETRY_HOME: "/opt/poetry"
-    POETRY_VIRTUALENVS_IN_PROJECT: true
-    POETRY_NO_INTERACTION: 1
-    PYTHONUNBUFFERED: 1
-    PYTHONDONTWRITEBYTECODE: 1
+    POETRY_VIRTUALENVS_IN_PROJECT: "true"
+    POETRY_NO_INTERACTION: "1"
+    PYTHONUNBUFFERED: "1"
+    PYTHONDONTWRITEBYTECODE: "1"
   script:
     - export PATH="$POETRY_HOME/bin:$PATH"
     - apt-get update && apt-get install -y curl
@@ -32,6 +32,23 @@ Run linters:
 
 Run Black Box Tests:
   stage: blackbox-tests
+  variables:
+    POETRY_HOME: "/opt/poetry"
+    POETRY_VIRTUALENVS_IN_PROJECT: "true"
+    POETRY_NO_INTERACTION: "1"
+    PYTHONUNBUFFERED: "1"
+    PYTHONDONTWRITEBYTECODE: "1"
   script:
+    # 1. Настройка окружения (копируем из lint)
+    - export PATH="$POETRY_HOME/bin:$PATH"
+    - apt-get update && apt-get install -y curl
+    - curl -sSL https://install.python-poetry.org | python -
+    
+    # 2. Установка зависимостей проекта (чтобы появился pydantic, pillow)
+    - poetry install --no-root
+    
+    # 3. Делаем скрипты исполняемыми
+    - chmod +x tests/run.sh tests/cases/*.sh
+    
+    # 4. Запускаем тесты
     - ./tests/run.sh tests/cases src/main.py
-
