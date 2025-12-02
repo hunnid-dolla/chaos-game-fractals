@@ -1,12 +1,13 @@
 """Точка входа в генератор фрактального пламени."""
 
 import logging
+import random
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from src.config import parse_args
-from src.core import AffineCoefficients
+from src.core import AffineCoefficients, Color
 from src.image import FractalImage
 from src.image_processor import ImageProcessor
 from src.renderer import Renderer
@@ -28,7 +29,7 @@ def render_task(
     transforms: list[Transformation],
     samples: int,
     iters: int,
-    seed: float,
+    seed: int,
 ) -> FractalImage:
     """Задача для отдельного процесса.
 
@@ -80,7 +81,21 @@ def main() -> None:
         config.iteration_count,
     )
 
-    affine_coefficients = generate_affine_coefficients(20)
+    if config.affine_params:
+        affine_coefficients = []
+        for p in config.affine_params:
+            color = Color(
+                r=random.randint(0, 255),
+                g=random.randint(0, 255),
+                b=random.randint(0, 255),
+            )
+            affine_coefficients.append(
+                AffineCoefficients(p.a, p.b, p.c, p.d, p.e, p.f, color)
+            )
+        logger.info("Using %s custom affine transformations", len(affine_coefficients))
+    else:
+        affine_coefficients = generate_affine_coefficients(20)
+        logger.info("Generated 20 random affine transformations")
 
     active_transformations = [
         TRANSFORMATIONS_MAP[func_conf.name]

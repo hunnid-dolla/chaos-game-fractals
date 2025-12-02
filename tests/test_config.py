@@ -9,7 +9,7 @@ DEFAULT_FUNCTIONS_COUNT = 4
 CUSTOM_WIDTH = 800
 CUSTOM_HEIGHT = 600
 CUSTOM_THREADS = 8
-CUSTOM_SEED = 123.45
+CUSTOM_SEED = 123
 
 
 def test_default_config() -> None:
@@ -18,6 +18,7 @@ def test_default_config() -> None:
     assert config.size.width == DEFAULT_WIDTH
     assert config.iteration_count == DEFAULT_ITERATIONS
     assert len(config.functions) == DEFAULT_FUNCTIONS_COUNT
+    assert isinstance(config.seed, int)
 
 
 def test_custom_size_config() -> None:

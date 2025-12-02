@@ -44,7 +44,7 @@ class AppConfig(BaseModel):
     samples: int = 20_000
     output_path: str = "result.png"
     threads: int = 1
-    seed: float = 5.1234
+    seed: int = 5
     functions: list[TransformationConfig] = Field(
         default_factory=lambda: [
             TransformationConfig(name="linear", weight=1.0),
@@ -53,7 +53,7 @@ class AppConfig(BaseModel):
             TransformationConfig(name="sinusoidal", weight=1.0),
         ]
     )
-    affine_params: AffineParams | None = None
+    affine_params: list[AffineParams] | None = None
     gamma_correction: bool = True
     gamma: float = 2.2
 
@@ -78,6 +78,33 @@ def _parse_functions(functions_str: str) -> list[dict[str, Any]]:
     return funcs
 
 
+def _parse_affine_params(params_str: str) -> list[dict[str, float]]:
+    """Парсит строку формата a,b,c,d,e,f/a,b..."""
+    result = []
+    groups = params_str.split("/")
+    for group in groups:
+        parts = group.split(",")
+        if len(parts) != 6:
+            print(f"Invalid affine params format: {group}", file=sys.stderr)
+            sys.exit(1)
+        try:
+            coeffs = [float(p) for p in parts]
+            result.append(
+                {
+                    "a": coeffs[0],
+                    "b": coeffs[1],
+                    "c": coeffs[2],
+                    "d": coeffs[3],
+                    "e": coeffs[4],
+                    "f": coeffs[5],
+                }
+            )
+        except ValueError:
+            print(f"Invalid number in affine params: {group}", file=sys.stderr)
+            sys.exit(1)
+    return result
+
+
 def _update_config_from_args(
     config_data: dict[str, Any], args: argparse.Namespace
 ) -> None:
@@ -91,21 +118,21 @@ def _update_config_from_args(
         "gamma": "gamma",
     }
 
-    # Обновляем простые поля
     for arg_name, config_key in simple_mappings.items():
         val = getattr(args, arg_name)
         if val is not None:
             config_data[config_key] = val
 
-    # Обновляем вложенные поля
     if args.width:
         config_data.setdefault("size", {})["width"] = args.width
     if args.height:
         config_data.setdefault("size", {})["height"] = args.height
 
-    # Обновляем функции
     if args.functions:
         config_data["functions"] = _parse_functions(args.functions)
+
+    if args.affine_params:
+        config_data["affine_params"] = _parse_affine_params(args.affine_params)
 
 
 def parse_args() -> AppConfig:
@@ -123,7 +150,13 @@ def parse_args() -> AppConfig:
     parser.add_argument("-s", "--samples", type=int, help="Number of starting points")
     parser.add_argument("-o", "--output-path", type=str, help="Output file path")
     parser.add_argument("-t", "--threads", type=int, help="Number of threads")
-    parser.add_argument("--seed", type=float, help="Random seed")
+    parser.add_argument("--seed", type=int, help="Random seed (long)")  # Тип int
+    parser.add_argument(
+        "-ap",
+        "--affine-params",
+        type=str,
+        help="Affine params a,b,c,d,e,f/...",
+    )
     parser.add_argument(
         "-f",
         "--functions",
