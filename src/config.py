@@ -10,6 +10,8 @@ from pydantic import BaseModel, Field, ValidationError
 
 from src.transformations import TRANSFORMATIONS_MAP
 
+AFFINE_COEFFS_COUNT = 6
+
 
 class SizeConfig(BaseModel):
     """Конфигурация размера изображения."""
@@ -84,7 +86,7 @@ def _parse_affine_params(params_str: str) -> list[dict[str, float]]:
     groups = params_str.split("/")
     for group in groups:
         parts = group.split(",")
-        if len(parts) != 6:
+        if len(parts) != AFFINE_COEFFS_COUNT:
             print(f"Invalid affine params format: {group}", file=sys.stderr)
             sys.exit(1)
         try:
@@ -150,7 +152,7 @@ def parse_args() -> AppConfig:
     parser.add_argument("-s", "--samples", type=int, help="Number of starting points")
     parser.add_argument("-o", "--output-path", type=str, help="Output file path")
     parser.add_argument("-t", "--threads", type=int, help="Number of threads")
-    parser.add_argument("--seed", type=int, help="Random seed (long)")  # Тип int
+    parser.add_argument("--seed", type=int, help="Random seed (long)")
     parser.add_argument(
         "-ap",
         "--affine-params",
@@ -181,6 +183,6 @@ def parse_args() -> AppConfig:
 
     try:
         return AppConfig(**config_data)
-    except (ValidationError, ValueError) as e:
+    except (ValidationError, ValueError) as e:  # noqa: BLE001
         print(f"Configuration error: {e}", file=sys.stderr)
         sys.exit(1)
