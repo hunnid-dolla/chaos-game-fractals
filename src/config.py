@@ -183,6 +183,6 @@ def parse_args() -> AppConfig:
 
     try:
         return AppConfig(**config_data)
-    except (ValidationError, ValueError) as e:  # noqa: BLE001
+    except (ValidationError, ValueError) as e:
         print(f"Configuration error: {e}", file=sys.stderr)
         sys.exit(1)
