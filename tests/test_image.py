@@ -1,17 +1,15 @@
 """Тесты для класса FractalImage."""
 
+import numpy as np
+
 from src.core import Color
 from src.image import FractalImage
 
 WIDTH = 10
 HEIGHT = 20
-EXPECTED_PIXELS = 200
 BIG_SIZE = 100
 SMALL_SIZE = 2
 COLOR_MAX = 255.0
-COLOR_HALF = 127.5
-HIT_COUNT_1 = 1
-HIT_COUNT_2 = 2
 
 
 def test_image_initialization() -> None:
@@ -19,8 +17,9 @@ def test_image_initialization() -> None:
     img = FractalImage(WIDTH, HEIGHT)
     assert img.width == WIDTH
     assert img.height == HEIGHT
-    assert len(img.pixels) == EXPECTED_PIXELS
-    assert img.pixels[0].counter == 0
+    assert img.data.shape == (HEIGHT, WIDTH, 3)
+    assert img.counter.shape == (HEIGHT, WIDTH)
+    assert np.all(img.counter == 0)
 
 
 def test_image_contains() -> None:
@@ -32,18 +31,12 @@ def test_image_contains() -> None:
     assert not img.contains(BIG_SIZE, BIG_SIZE // 2)
 
 
-def test_pixel_hit() -> None:
-    """Проверка попадания в пиксель."""
+def test_manual_data_modification() -> None:
+    """Проверка записи данных в массив."""
     img = FractalImage(SMALL_SIZE, SMALL_SIZE)
-    pixel = img.pixel_at(0, 0)
-    pixel.hit(Color(255, 0, 0))
+    # Имитация попадания
+    img.data[0, 0] += [255.0, 0.0, 0.0]
+    img.counter[0, 0] += 1
 
-    assert pixel.counter == HIT_COUNT_1
-    assert pixel.r == COLOR_MAX
-    assert pixel.g == 0.0
-    assert pixel.b == 0.0
-
-    pixel.hit(Color(0, 0, 255))
-    assert pixel.counter == HIT_COUNT_2
-    assert pixel.r == COLOR_HALF
-    assert pixel.b == COLOR_HALF
+    assert img.counter[0, 0] == 1
+    assert np.array_equal(img.data[0, 0], [255.0, 0.0, 0.0])

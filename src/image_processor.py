@@ -1,7 +1,6 @@
 """Модуль для обработки и сохранения изображений."""
 
-import math
-
+import numpy as np
 from PIL import Image
 
 from src.image import FractalImage
@@ -18,42 +17,48 @@ class ImageProcessor:
         *,
         enable_gamma_correction: bool = True,
     ) -> None:
-        """Сохраняет изображение в файл с применением гамма-коррекции.
+        """Сохраняет изображение в файл с применением гамма-коррекции."""
+        with np.errstate(divide="ignore", invalid="ignore"):
+            # 1. Получаем карту частот (сколько раз попали в каждый пиксель)
+            counts = image.counter
 
-        Args:
-            image: Холст с пикселями.
-            output_path: Путь для сохранения.
-            gamma: Значение гаммы.
-            enable_gamma_correction: Включить ли коррекцию.
+            # Если изображение пустое, сохраняем черный квадрат
+            if np.max(counts) == 0:
+                img = Image.new("RGB", (image.width, image.height))
+                img.save(output_path, "PNG")
+                return
 
-        """
-        # Подготавливаем буфер данных
-        data = []
+            # 2. Логарифмическая коррекция яркости (Log-Density)
+            safe_counts = np.maximum(counts, 1)
+            log_counts = np.log10(safe_counts)
 
-        # Предварительно вычисляем обратную гамму для скорости
-        inv_gamma = 1.0 / gamma if enable_gamma_correction else 1.0
+            # Нормируем карту яркости от 0 до 1
+            max_log = np.max(log_counts)
+            alpha = log_counts / max_log
 
-        for pixel in image.pixels:
-            if pixel.counter == 0:
-                data.append((0, 0, 0))
-                continue
+            # 3. Вычисляем средний цвет
+            alpha_expanded = alpha[:, :, np.newaxis]
+            counts_expanded = safe_counts[:, :, np.newaxis]
 
-            r, g, b = pixel.r, pixel.g, pixel.b
+            # Средний цвет
+            avg_color = image.data / counts_expanded
 
-            # Применяем гамма-коррекцию, если включена
-            if enable_gamma_correction:
-                r = math.pow(r / 255.0, inv_gamma) * 255.0
-                g = math.pow(g / 255.0, inv_gamma) * 255.0
-                b = math.pow(b / 255.0, inv_gamma) * 255.0
+            # 4. Итоговый цвет = Средний цвет * Яркость
+            normalized_data = avg_color * alpha_expanded
 
-            # Ограничиваем значения диапазоном
-            r_int = min(max(0, int(r)), 255)
-            g_int = min(max(0, int(g)), 255)
-            b_int = min(max(0, int(b)), 255)
+            # Дополнительное усиление насыщенности
+            normalized_data *= 1.2
 
-            data.append((r_int, g_int, b_int))
+        # 5. Гамма-коррекция
+        if enable_gamma_correction:
+            normalized_data /= 255.0
+            # Защита от отрицательных значений перед pow
+            normalized_data = np.maximum(normalized_data, 0)
+            normalized_data = np.power(normalized_data, 1.0 / gamma)
+            normalized_data *= 255.0
 
-        # Создаем изображение и сохраняем
-        img = Image.new("RGB", (image.width, image.height))
-        img.putdata(data)
+        # Обрезаем значения 0..255
+        final_data = np.clip(normalized_data, 0, 255).astype(np.uint8)
+
+        img = Image.fromarray(final_data, "RGB")
         img.save(output_path, "PNG")

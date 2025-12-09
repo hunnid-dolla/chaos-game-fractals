@@ -30,6 +30,7 @@ def render_task(
     samples: int,
     iters: int,
     seed: int,
+    symmetry: int,
 ) -> FractalImage:
     """Задача для отдельного процесса.
 
@@ -37,29 +38,23 @@ def render_task(
     """
     import random
 
+    import numpy as np
+
+    # Переинициализация генераторов случайных чисел для каждого процесса
     random.seed(seed)
+    np.random.seed(seed)
 
     image = FractalImage(width, height)
     renderer = Renderer()
-    renderer.render(image, coeffs, transforms, samples, iters)
+    renderer.render(image, coeffs, transforms, samples, iters, symmetry)
     return image
 
 
 def merge_images(base: FractalImage, layer: FractalImage) -> None:
     """Объединяет (суммирует) два изображения."""
-    for i, pixel_layer in enumerate(layer.pixels):
-        if pixel_layer.counter > 0:
-            pixel_base = base.pixels[i]
-            if pixel_base.counter == 0:
-                pixel_base.r = pixel_layer.r
-                pixel_base.g = pixel_layer.g
-                pixel_base.b = pixel_layer.b
-                pixel_base.counter = pixel_layer.counter
-            else:
-                pixel_base.r = (pixel_base.r + pixel_layer.r) / 2
-                pixel_base.g = (pixel_base.g + pixel_layer.g) / 2
-                pixel_base.b = (pixel_base.b + pixel_layer.b) / 2
-                pixel_base.counter += pixel_layer.counter
+    # NumPy
+    base.data += layer.data
+    base.counter += layer.counter
 
 
 def main() -> None:
@@ -74,16 +69,19 @@ def main() -> None:
         sys.exit(1)
 
     logger.info(
-        "Config loaded. Size: %sx%s, Threads: %s, Iterations: %s",
+        "Config loaded. Size: %sx%s, Threads: %s, Iterations: %s, Symmetry: %s",
         config.size.width,
         config.size.height,
         config.threads,
         config.iteration_count,
+        config.symmetry,
     )
 
+    # Логика аффинных коэффициентов
     if config.affine_params:
         affine_coefficients = []
         for p in config.affine_params:
+            # Для заданных вручную коэффициентов генерируем случайный цвет
             color = Color(
                 r=random.randint(0, 255),
                 g=random.randint(0, 255),
@@ -108,6 +106,7 @@ def main() -> None:
         sys.exit(1)
 
     total_samples = config.samples
+    # Защита от деления на ноль или слишком малого кол-ва сэмплов
     total_samples = max(total_samples, config.threads)
     samples_per_thread = total_samples // config.threads
 
@@ -129,6 +128,7 @@ def main() -> None:
                     samples_per_thread,
                     config.iteration_count,
                     thread_seed,
+                    config.symmetry,
                 )
             )
 

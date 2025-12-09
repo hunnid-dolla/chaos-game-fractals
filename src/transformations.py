@@ -1,7 +1,8 @@
 """Математические функции трансформаций (вариации)."""
 
-import math
 from abc import ABC, abstractmethod
+
+import numpy as np
 
 from src.core import Point
 
@@ -11,7 +12,7 @@ class Transformation(ABC):
 
     @abstractmethod
     def apply(self, point: Point) -> Point:
-        """Применяет трансформацию к точке."""
+        """Применяет трансформацию к точке (или массиву точек)."""
 
 
 class LinearTransformation(Transformation):
@@ -27,7 +28,7 @@ class SinusoidalTransformation(Transformation):
 
     def apply(self, point: Point) -> Point:
         """Применяет синус к координатам."""
-        return Point(x=math.sin(point.x), y=math.sin(point.y))
+        return Point(x=np.sin(point.x), y=np.sin(point.y))
 
 
 class SphericalTransformation(Transformation):
@@ -36,9 +37,8 @@ class SphericalTransformation(Transformation):
     def apply(self, point: Point) -> Point:
         """Искажает координаты по сфере."""
         r2 = point.x**2 + point.y**2
-        if r2 == 0:
-            return point
-        return Point(x=point.x / r2, y=point.y / r2)
+        factor = 1.0 / np.where(r2 == 0, 1e-9, r2)
+        return Point(x=point.x * factor, y=point.y * factor)
 
 
 class SwirlTransformation(Transformation):
@@ -47,8 +47,8 @@ class SwirlTransformation(Transformation):
     def apply(self, point: Point) -> Point:
         """Закручивает координаты в вихрь."""
         r2 = point.x**2 + point.y**2
-        sin_r2 = math.sin(r2)
-        cos_r2 = math.cos(r2)
+        sin_r2 = np.sin(r2)
+        cos_r2 = np.cos(r2)
         return Point(
             x=point.x * sin_r2 - point.y * cos_r2,
             y=point.x * cos_r2 + point.y * sin_r2,
@@ -60,10 +60,8 @@ class HorseshoeTransformation(Transformation):
 
     def apply(self, point: Point) -> Point:
         """Искажает координаты в форме подковы."""
-        r = math.sqrt(point.x**2 + point.y**2)
-        if r == 0:
-            return point
-        inv_r = 1.0 / r
+        r = np.sqrt(point.x**2 + point.y**2)
+        inv_r = 1.0 / np.where(r == 0, 1e-9, r)
         return Point(
             x=inv_r * (point.x - point.y) * (point.x + point.y),
             y=inv_r * 2 * point.x * point.y,

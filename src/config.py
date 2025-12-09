@@ -47,6 +47,7 @@ class AppConfig(BaseModel):
     output_path: str = "result.png"
     threads: int = 1
     seed: int = 5
+    symmetry: int = 1
     functions: list[TransformationConfig] = Field(
         default_factory=lambda: [
             TransformationConfig(name="linear", weight=1.0),
@@ -118,6 +119,7 @@ def _update_config_from_args(
         "seed": "seed",
         "gamma_correction": "gamma_correction",
         "gamma": "gamma",
+        "symmetry": "symmetry",
     }
 
     for arg_name, config_key in simple_mappings.items():
@@ -153,6 +155,9 @@ def parse_args() -> AppConfig:
     parser.add_argument("-o", "--output-path", type=str, help="Output file path")
     parser.add_argument("-t", "--threads", type=int, help="Number of threads")
     parser.add_argument("--seed", type=int, help="Random seed (long)")
+    parser.add_argument(
+        "-sym", "--symmetry", type=int, help="Symmetry level (rotations)"
+    )
     parser.add_argument(
         "-ap",
         "--affine-params",

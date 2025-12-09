@@ -4,8 +4,7 @@ echo "Testing image properties..."
 
 # Аргументы для запуска программы
 SCRIPT_PATH="$1"
-# ИЗМЕНЕНИЕ: Добавлены -s 1000 -i 1000 для скорости
-ARGS="-w 800 -h 600 -s 1000 -i 1000 -o test_output.png"
+ARGS="-w 800 -h 600 -o test_output.png"
 
 # Генерация тестового изображения, если оно не существует
 if [ ! -f "test_output.png" ]; then
@@ -44,8 +43,7 @@ else
     exit 1
 fi
 
-# ИЗМЕНЕНИЕ: Проверка сигнатуры PNG через Python (вместо xxd)
-# Первые 8 байт PNG: \x89PNG\r\n\x1a\n
+# Проверка сигнатуры PNG (через Python, т.к. xxd нет в контейнере, но смысл тот же)
 IS_PNG=$(python3 -c "with open('test_output.png', 'rb') as f: print(f.read(8) == b'\x89PNG\r\n\x1a\n')")
 
 if [ "$IS_PNG" = "True" ]; then

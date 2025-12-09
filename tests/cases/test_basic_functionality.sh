@@ -4,10 +4,9 @@ echo "Testing basic functionality..."
 
 # Аргументы для запуска программы
 SCRIPT_PATH="$1"
-# ИЗМЕНЕНИЕ: Добавлены -s 1000 -i 1000 для скорости
-ARGS="-w 800 -h 600 -s 1000 -i 1000 -o test_output.png"
+ARGS="-w 800 -h 600 -o test_output.png"
 
-# Запуск программы через POETRY
+# Запуск через POETRY (обязательно для работы импортов)
 echo "Running: poetry run python $SCRIPT_PATH $ARGS"
 PYTHONPATH=. poetry run python "$SCRIPT_PATH" $ARGS
 

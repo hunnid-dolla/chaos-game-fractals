@@ -11,8 +11,8 @@ measure_time() {
     # Измерение времени выполнения
     START_TIME=$(date +%s)
     
-    # ИЗМЕНЕНИЕ: Уменьшено разрешение до 100x100 и кол-во точек до 1000
-    PYTHONPATH=. poetry run python "$PYTHON_PATH" -w 100 -h 100 -s 1000 -i 500 -t "$threads" -o "$output_file"
+    # 1920x1080, дефолтное кол-во итераций
+    PYTHONPATH=. poetry run python "$PYTHON_PATH" -w 1920 -h 1080 -t "$threads" -o "$output_file"
     
     EXIT_CODE=$?
     END_TIME=$(date +%s)

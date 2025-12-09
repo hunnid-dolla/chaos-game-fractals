@@ -1,6 +1,6 @@
 """Логика рендеринга фрактала (алгоритм Chaos Game)."""
 
-import random
+import numpy as np
 
 from src.core import AffineCoefficients, Point
 from src.image import FractalImage
@@ -8,7 +8,7 @@ from src.transformations import Transformation
 
 
 class Renderer:
-    """Отвечает за генерацию изображения."""
+    """Отвечает за генерацию изображения с использованием векторизации."""
 
     def render(
         self,
@@ -17,62 +17,83 @@ class Renderer:
         transformations: list[Transformation],
         samples: int,
         iter_per_sample: int,
+        symmetry: int = 1,
     ) -> None:
-        """Запускает процесс рендеринга.
-
-        Args:
-            image: Холст для рисования.
-            coefficients: Список аффинных коэффициентов (с цветами).
-            transformations: Список применяемых вариаций.
-            samples: Количество начальных точек (потоков "сэмплов").
-            iter_per_sample: Количество итераций для каждой точки.
-
-        """
+        """Запускает процесс рендеринга (векторизованная версия)."""
         aspect = image.width / image.height
         world_x_min, world_x_max = -aspect, aspect
         world_y_min, world_y_max = -1.0, 1.0
 
-        for _ in range(samples):
-            # 1. Выбираем случайную стартовую точку
-            current_point = Point(
-                random.uniform(world_x_min, world_x_max),
-                random.uniform(world_y_min, world_y_max),
-            )
+        coeffs_a = np.array([c.a for c in coefficients])
+        coeffs_b = np.array([c.b for c in coefficients])
+        coeffs_c = np.array([c.c for c in coefficients])
+        coeffs_d = np.array([c.d for c in coefficients])
+        coeffs_e = np.array([c.e for c in coefficients])
+        coeffs_f = np.array([c.f for c in coefficients])
 
-            for step in range(-20, iter_per_sample):
-                # Выбираем случайное аффинное преобразование
-                coeff = random.choice(coefficients)
+        coeffs_colors = np.array(
+            [[c.color.r, c.color.g, c.color.b] for c in coefficients]
+        )
 
-                # Применяем линейное преобразование
-                x = coeff.a * current_point.x + coeff.b * current_point.y + coeff.c
-                y = coeff.d * current_point.x + coeff.e * current_point.y + coeff.f
+        current_x = np.random.uniform(world_x_min, world_x_max, samples)
+        current_y = np.random.uniform(world_y_min, world_y_max, samples)
 
-                # Применяем нелинейные трансформации
-                new_x, new_y = 0.0, 0.0
-                p_aff = Point(x, y)
+        for step in range(-20, iter_per_sample):
+            indices = np.random.randint(0, len(coefficients), samples)
 
-                for transform in transformations:
-                    p_res = transform.apply(p_aff)
-                    new_x += p_res.x
-                    new_y += p_res.y
+            a = coeffs_a[indices]
+            b = coeffs_b[indices]
+            c = coeffs_c[indices]
+            d = coeffs_d[indices]
+            e = coeffs_e[indices]
+            f = coeffs_f[indices]
 
-                current_point = Point(new_x, new_y)
+            next_x = a * current_x + b * current_y + c
+            next_y = d * current_x + e * current_y + f
 
-                if step < 0:
-                    continue
+            final_x = np.zeros_like(next_x)
+            final_y = np.zeros_like(next_y)
 
-                # 3. Рисуем точку
-                screen_x = int(
-                    (current_point.x - world_x_min)
-                    / (world_x_max - world_x_min)
-                    * image.width
+            p_aff = Point(next_x, next_y)
+
+            for transform in transformations:
+                p_res = transform.apply(p_aff)
+                final_x += p_res.x
+                final_y += p_res.y
+
+            current_x = final_x
+            current_y = final_y
+
+            if step < 0:
+                continue
+
+            # Симметрия
+            for s in range(symmetry):
+                theta = s * (2 * np.pi / symmetry)
+
+                # Поворот координат
+                rot_x = current_x * np.cos(theta) - current_y * np.sin(theta)
+                rot_y = current_x * np.sin(theta) + current_y * np.cos(theta)
+
+                raw_screen_x = (
+                    (rot_x - world_x_min) / (world_x_max - world_x_min) * image.width
                 )
-                screen_y = int(
-                    (current_point.y - world_y_min)
-                    / (world_y_max - world_y_min)
-                    * image.height
+                raw_screen_y = (
+                    (rot_y - world_y_min) / (world_y_max - world_y_min) * image.height
                 )
 
-                if image.contains(screen_x, screen_y):
-                    pixel = image.pixel_at(screen_x, screen_y)
-                    pixel.hit(coeff.color)
+                valid_mask = (
+                    np.isfinite(raw_screen_x)
+                    & np.isfinite(raw_screen_y)
+                    & (raw_screen_x >= 0)
+                    & (raw_screen_x < image.width)
+                    & (raw_screen_y >= 0)
+                    & (raw_screen_y < image.height)
+                )
+
+                valid_x = raw_screen_x[valid_mask].astype(int)
+                valid_y = raw_screen_y[valid_mask].astype(int)
+                valid_colors = coeffs_colors[indices[valid_mask]]
+
+                np.add.at(image.data, (valid_y, valid_x), valid_colors)
+                np.add.at(image.counter, (valid_y, valid_x), 1)
