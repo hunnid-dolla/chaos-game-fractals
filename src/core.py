@@ -26,8 +26,7 @@ class Color:
 
 @dataclass(frozen=True)
 class AffineCoefficients:
-    """
-    Коэффициенты для аффинного преобразования.
+    """Коэффициенты для аффинного преобразования.
 
     x_new = ax + by + c, y_new = dx + ey + f.
     """
