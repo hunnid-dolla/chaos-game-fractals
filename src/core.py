@@ -26,7 +26,11 @@ class Color:
 
 @dataclass(frozen=True)
 class AffineCoefficients:
-    """Коэффициенты для аффинного преобразования (x_new=ax+by+c, y_new=dx+ey+f)."""
+    """
+    Коэффициенты для аффинного преобразования.
+
+    x_new = ax + by + c, y_new = dx + ey + f.
+    """
 
     a: float
     b: float
@@ -58,3 +62,15 @@ class Pixel:
             self.g = (self.g + color.g) / 2
             self.b = (self.b + color.b) / 2
         self.counter += 1
+
+
+@dataclass(frozen=True)
+class RenderContext:
+    """Контекст рендеринга, объединяющий параметры генерации."""
+
+    width: int
+    height: int
+    samples: int
+    iters: int
+    symmetry: int
+    seed: int

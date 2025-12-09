@@ -2,7 +2,6 @@
 
 import numpy as np
 
-from src.core import Color
 from src.image import FractalImage
 
 WIDTH = 10

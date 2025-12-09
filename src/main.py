@@ -7,7 +7,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from src.config import parse_args
-from src.core import AffineCoefficients, Color
+from src.core import AffineCoefficients, Color, RenderContext
 from src.image import FractalImage
 from src.image_processor import ImageProcessor
 from src.renderer import Renderer
@@ -23,36 +23,24 @@ logger = logging.getLogger(__name__)
 
 
 def render_task(
-    width: int,
-    height: int,
+    ctx: RenderContext,
     coeffs: list[AffineCoefficients],
     transforms: list[Transformation],
-    samples: int,
-    iters: int,
-    seed: int,
-    symmetry: int,
 ) -> FractalImage:
     """Задача для отдельного процесса.
 
     Создает свой экземпляр изображения и рендерит часть точек.
     """
-    import random
+    random.seed(ctx.seed)
 
-    import numpy as np
-
-    # Переинициализация генераторов случайных чисел для каждого процесса
-    random.seed(seed)
-    np.random.seed(seed)
-
-    image = FractalImage(width, height)
+    image = FractalImage(ctx.width, ctx.height)
     renderer = Renderer()
-    renderer.render(image, coeffs, transforms, samples, iters, symmetry)
+    renderer.render(image, coeffs, transforms, ctx)
     return image
 
 
 def merge_images(base: FractalImage, layer: FractalImage) -> None:
     """Объединяет (суммирует) два изображения."""
-    # NumPy
     base.data += layer.data
     base.counter += layer.counter
 
@@ -77,11 +65,9 @@ def main() -> None:
         config.symmetry,
     )
 
-    # Логика аффинных коэффициентов
     if config.affine_params:
         affine_coefficients = []
         for p in config.affine_params:
-            # Для заданных вручную коэффициентов генерируем случайный цвет
             color = Color(
                 r=random.randint(0, 255),
                 g=random.randint(0, 255),
@@ -106,7 +92,6 @@ def main() -> None:
         sys.exit(1)
 
     total_samples = config.samples
-    # Защита от деления на ноль или слишком малого кол-ва сэмплов
     total_samples = max(total_samples, config.threads)
     samples_per_thread = total_samples // config.threads
 
@@ -118,17 +103,20 @@ def main() -> None:
     with ProcessPoolExecutor(max_workers=config.threads) as executor:
         for i in range(config.threads):
             thread_seed = config.seed + i
+            ctx = RenderContext(
+                width=config.size.width,
+                height=config.size.height,
+                samples=samples_per_thread,
+                iters=config.iteration_count,
+                symmetry=config.symmetry,
+                seed=thread_seed,
+            )
             futures.append(
                 executor.submit(
                     render_task,
-                    config.size.width,
-                    config.size.height,
+                    ctx,
                     affine_coefficients,
                     active_transformations,
-                    samples_per_thread,
-                    config.iteration_count,
-                    thread_seed,
-                    config.symmetry,
                 )
             )
 

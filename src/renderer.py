@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from src.core import AffineCoefficients, Point
+from src.core import AffineCoefficients, Point, RenderContext
 from src.image import FractalImage
 from src.transformations import Transformation
 
@@ -15,11 +15,11 @@ class Renderer:
         image: FractalImage,
         coefficients: list[AffineCoefficients],
         transformations: list[Transformation],
-        samples: int,
-        iter_per_sample: int,
-        symmetry: int = 1,
+        ctx: RenderContext,
     ) -> None:
         """Запускает процесс рендеринга (векторизованная версия)."""
+        rng = np.random.default_rng(ctx.seed)
+
         aspect = image.width / image.height
         world_x_min, world_x_max = -aspect, aspect
         world_y_min, world_y_max = -1.0, 1.0
@@ -35,11 +35,11 @@ class Renderer:
             [[c.color.r, c.color.g, c.color.b] for c in coefficients]
         )
 
-        current_x = np.random.uniform(world_x_min, world_x_max, samples)
-        current_y = np.random.uniform(world_y_min, world_y_max, samples)
+        current_x = rng.uniform(world_x_min, world_x_max, ctx.samples)
+        current_y = rng.uniform(world_y_min, world_y_max, ctx.samples)
 
-        for step in range(-20, iter_per_sample):
-            indices = np.random.randint(0, len(coefficients), samples)
+        for step in range(-20, ctx.iters):
+            indices = rng.integers(0, len(coefficients), ctx.samples)
 
             a = coeffs_a[indices]
             b = coeffs_b[indices]
@@ -67,11 +67,9 @@ class Renderer:
             if step < 0:
                 continue
 
-            # Симметрия
-            for s in range(symmetry):
-                theta = s * (2 * np.pi / symmetry)
+            for s in range(ctx.symmetry):
+                theta = s * (2 * np.pi / ctx.symmetry)
 
-                # Поворот координат
                 rot_x = current_x * np.cos(theta) - current_y * np.sin(theta)
                 rot_y = current_x * np.sin(theta) + current_y * np.cos(theta)
 
