@@ -3,13 +3,9 @@
 import math
 
 from src.core import Point
-from src.transformations import (
-    HorseshoeTransformation,
-    LinearTransformation,
-    SinusoidalTransformation,
-    SphericalTransformation,
-    SwirlTransformation,
-)
+from src.transformations import (HorseshoeTransformation, LinearTransformation,
+                                 SinusoidalTransformation,
+                                 SphericalTransformation, SwirlTransformation)
 
 COORD_1 = 1.0
 COORD_2 = 2.0
