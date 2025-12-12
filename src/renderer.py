@@ -21,8 +21,9 @@ class Renderer:
         rng = np.random.default_rng(ctx.seed)
 
         aspect = image.width / image.height
-        world_x_min, world_x_max = -aspect, aspect
-        world_y_min, world_y_max = -1.0, 1.0
+        scale = 10.0  # Коэффициент масштаба
+        world_x_min, world_x_max = -aspect * scale, aspect * scale
+        world_y_min, world_y_max = -1.0 * scale, 1.0 * scale
 
         coeffs_a = np.array([c.a for c in coefficients])
         coeffs_b = np.array([c.b for c in coefficients])
