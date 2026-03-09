@@ -62,7 +62,7 @@
 Команда:
 `poetry run python -m src.main -s 200000 -i 5000 -t 4 --symmetry 3 -f swirl:1.0,horseshoe:0.5 -o galaxy_final.png`
 
-![galaxy_final](/uploads/b314336189fcd582683f05e2a444240b/galaxy_final.png)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/36919389-7726-4bb3-92c5-cdcef6e8678d" />
 
 + Пример генерации "Неонового цветка" 
 
@@ -88,11 +88,11 @@ neon.json:
   ]
 }
 ```
-![neon](/uploads/0b053bbe5de05edc768dc717998095ad/neon.png)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d1e7b2c5-0bcf-4334-b665-21f42a37bcdd" />
 
 + Пример генерации "Космоса" 
 
 Команда:
 `poetry run python -m src.main --config nebula.json --seed 777 -o space_2.png`
 
-![space_2](/uploads/c804ccf89bfa0787845eaffffd79950f/space_2.png)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/0fca2dfc-c9ec-4090-a4fa-cba746d76c2c" />
